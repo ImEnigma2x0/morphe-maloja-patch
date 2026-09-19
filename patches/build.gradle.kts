@@ -1,14 +1,13 @@
-group = "app.template"
+group = "app.enigma"
 
 patches {
-    // TODO: Update this section with your project details.
     about {
-        name = "UserXYZ Patches"
-        description = "Patches for apps I like"
-        source = "git@github.com:UserXYZ/morphe-patches.git"
-        author = "Awesome dev"
+        name = "Enigma Maloja Patch"
+        description = "Adds Maloja as a scrobbling provider for YouTube Music. Use together with the official Morphe patches."
+        source = "git@github.com:ImEnigma2x0/morphe-maloja-patch.git"
+        author = "ImEnigma2x0"
         contact = "na"
-        website = "na"
+        website = "https://github.com/ImEnigma2x0/morphe-maloja-patch"
         license = "GPLv3"
     }
 }

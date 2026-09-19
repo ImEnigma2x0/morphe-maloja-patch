@@ -128,3 +128,9 @@ node_modules/
 # Ignore IDEA files
 .idea/
 local.properties
+
+
+# Developer-specific files
+.dev
+# Local-only plans and design docs
+docs/superpowers/
