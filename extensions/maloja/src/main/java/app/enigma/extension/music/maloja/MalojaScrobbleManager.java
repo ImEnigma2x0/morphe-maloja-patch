@@ -39,12 +39,17 @@ public class MalojaScrobbleManager {
     private String currentAlbum;
     private int currentDurationSeconds;
 
+    /** Wall clock start of the song, sent to Maloja as the listen time. */
     private long songStartedAtSeconds;
     private boolean songStarted;
     private boolean isPlayerPlaying;
 
-    private long scrobbleRemainingMillis;
-    private long scrobbleTimerStartedAt;
+    /** Playback of the current song accumulated before the current play stretch. */
+    private long playedMillis;
+    /** When the current play stretch started, or zero while paused. */
+    private long playingSince;
+    /** Played time at which the song is scrobbled, or negative if it is not scrobbled at all. */
+    private long scrobbleAtPlayedMillis = -1;
     private boolean scrobbled;
     private Runnable scrobbleRunnable;
 
@@ -137,7 +142,11 @@ public class MalojaScrobbleManager {
     public void onSetPlaybackState(PlaybackState state) {
         Utils.verifyOnMainThread();
         if (state == null) return;
+
+        final boolean wasPlaying = isPlayerPlaying;
         isPlayerPlaying = state.getState() == PlaybackState.STATE_PLAYING;
+        // The app repeats the playing state on buffering and position updates.
+        if (wasPlaying == isPlayerPlaying) return;
 
         if (currentTitle == null || currentArtist == null) return;
 
@@ -148,13 +157,16 @@ public class MalojaScrobbleManager {
                 onSongResume();
             }
         } else if (songStarted) {
-            pauseTimer();
+            onSongPause();
         }
     }
 
     private void onSongStart() {
-        songStartedAtSeconds = System.currentTimeMillis() / 1000;
+        final long now = System.currentTimeMillis();
+        songStartedAtSeconds = now / 1000;
         songStarted = true;
+        playedMillis = 0;
+        playingSince = now;
 
         if (MalojaSettings.ENABLED.get()) {
             startTimer();
@@ -162,13 +174,27 @@ public class MalojaScrobbleManager {
     }
 
     private void onSongResume() {
-        if (MalojaSettings.ENABLED.get() && !scrobbled && scrobbleRemainingMillis > 0) {
-            cancelRunnable();
-            scrobbleTimerStartedAt = System.currentTimeMillis();
-            scheduleScrobble(scrobbleRemainingMillis);
+        playingSince = System.currentTimeMillis();
+        scheduleFromPlayedTime();
+    }
+
+    private void onSongPause() {
+        cancelRunnable();
+        if (playingSince != 0L) {
+            playedMillis += System.currentTimeMillis() - playingSince;
+            playingSince = 0L;
         }
     }
 
+    private long currentPlayedMillis() {
+        return playingSince == 0L ? playedMillis : playedMillis + System.currentTimeMillis() - playingSince;
+    }
+
+    /**
+     * Decides how much of the song must play before it is scrobbled and (re)schedules the
+     * scrobble accordingly. Safe to call again when the song length is corrected: only the
+     * played time counts, so pauses never bring the scrobble forward.
+     */
     private void startTimer() {
         cancelRunnable();
 
@@ -176,52 +202,39 @@ public class MalojaScrobbleManager {
         if (currentDurationSeconds <= minSongDuration) {
             Logger.printDebug(() -> "Duration " + currentDurationSeconds
                     + "s <= minimum " + minSongDuration + "s, skipping scrobble");
+            scrobbleAtPlayedMillis = -1;
             return;
         }
 
         final float delayPercent = MalojaSettings.DELAY_PERCENT.get() / 100.0f;
-        final int delaySeconds = MalojaSettings.DELAY_SECONDS.get();
+        final long delayMillis = MalojaSettings.DELAY_SECONDS.get() * 1000L;
+        final long thresholdMillis = (long) (currentDurationSeconds * 1000L * delayPercent);
+        scrobbleAtPlayedMillis = Math.min(thresholdMillis, delayMillis);
 
-        final long thresholdMs = (long) (currentDurationSeconds * 1000L * delayPercent);
-        final long totalDelayMs = Math.min(thresholdMs, delaySeconds * 1000L);
-        final long elapsedMs = Math.max(0, System.currentTimeMillis() - songStartedAtSeconds * 1000L);
-
-        scrobbleRemainingMillis = totalDelayMs - elapsedMs;
-
-        if (scrobbleRemainingMillis <= 0) {
-            scrobble();
-            return;
-        }
-
-        if (isPlayerPlaying) {
-            scrobbleTimerStartedAt = System.currentTimeMillis();
-            scheduleScrobble(scrobbleRemainingMillis);
-        } else {
-            scrobbleTimerStartedAt = 0L;
-        }
+        scheduleFromPlayedTime();
     }
 
-    private void pauseTimer() {
+    private void scheduleFromPlayedTime() {
         cancelRunnable();
-        if (scrobbleTimerStartedAt != 0L) {
-            final long elapsed = System.currentTimeMillis() - scrobbleTimerStartedAt;
-            scrobbleRemainingMillis = Math.max(0, scrobbleRemainingMillis - elapsed);
-            scrobbleTimerStartedAt = 0L;
+        if (scrobbled || scrobbleAtPlayedMillis < 0 || !MalojaSettings.ENABLED.get()) return;
+
+        final long remainingMillis = scrobbleAtPlayedMillis - currentPlayedMillis();
+        if (remainingMillis <= 0) {
+            scrobble();
+        } else if (isPlayerPlaying) {
+            scrobbleRunnable = () -> {
+                scrobbleRunnable = null;
+                scrobble();
+            };
+            handler.postDelayed(scrobbleRunnable, remainingMillis);
         }
     }
 
     private void stopTimer() {
         cancelRunnable();
-        scrobbleRemainingMillis = 0L;
-        scrobbleTimerStartedAt = 0L;
-    }
-
-    private void scheduleScrobble(long delayMs) {
-        scrobbleRunnable = () -> {
-            scrobbleRunnable = null;
-            scrobble();
-        };
-        handler.postDelayed(scrobbleRunnable, delayMs);
+        scrobbleAtPlayedMillis = -1;
+        playedMillis = 0;
+        playingSince = 0L;
     }
 
     private void cancelRunnable() {
