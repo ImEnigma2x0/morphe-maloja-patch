@@ -33,10 +33,21 @@ This is not a fork: keep using the official source and add this one next to it.
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
+> **[v1.0.0](https://github.com/ImEnigma2x0/morphe-maloja-patch/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
+<details open>
+<summary>📦 YouTube Music&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<br>
 
-<!-- Do not modify this section by hand. The patch list is generated when release.yml creates a new release. -->
+**🎯 Supported versions:**
 
-#### A list of the patches will automatically be shown here after the first release is created.
+| 🧪&nbsp;9.36.50 | 🧪&nbsp;9.35.54 | 🧪&nbsp;9.34.52 | 9.15.51 |
+| :---: | :---: | :---: | :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Maloja Scrobbling](#maloja-scrobbling) | Adds Maloja as a scrobbling provider. Requires the official Morphe patches to be applied as well, so the settings appear in the Scrobbling screen. |  |
+
+</details>
 
 <!-- PATCHES_END -->
 
