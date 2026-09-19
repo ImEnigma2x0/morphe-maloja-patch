@@ -25,8 +25,10 @@ This is not a fork: keep using the official source and add this one next to it.
 
 - Only HTTPS servers are supported. `http://` URLs are upgraded to `https://`.
 - Maloja ignores "now playing" updates, so there is no such option.
-- The metadata cleanup options of the official `Scrobbling` patch (title cleanup, custom regex,
-  "Artist - Title" parsing) also apply to Maloja.
+- Metadata cleanup (tag removal, custom regex, "Artist - Title" parsing) has its own options under Maloja,
+  since the official ones are only available while Last.fm or ListenBrainz is enabled.
+- Works with the official `Play album songs` patch: the album track title and length are used
+  instead of the music video ones.
 
 ## 🩹 Patches list
 

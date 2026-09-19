@@ -3,15 +3,14 @@ package app.enigma.extension.music.maloja;
 import app.morphe.extension.shared.Logger;
 
 /**
- * Same title, artist and album cleanup as the official Morphe scrobbling patch, driven by the
- * same settings, so every provider scrobbles identical metadata.
+ * Same title, artist and album cleanup as the official Morphe scrobbling patch.
  */
 final class MetadataCleaner {
 
     static String cleanTitle(String title) {
         if (title == null) return null;
         String clean = title;
-        if (MalojaSettings.metadataCleanup()) {
+        if (MalojaSettings.METADATA_CLEANUP.get()) {
             clean = clean.replaceAll("(?i)\\s*[（(\\[](official\\s+)?(video|audio|music\\s+video|lyric\\s+video|visualizer)[）)\\]]", "");
             clean = clean.replaceAll("(?i)\\s*[（(\\[](\\d{4}\\s+)?remaster(ed)?(\\s+\\d{4})?[）)\\]]", "");
             clean = clean.replaceAll("(?i)\\s*[（(\\[]live(\\s+at\\s+.*|\\s+\\d{4})?[）)\\]]", "");
@@ -24,7 +23,7 @@ final class MetadataCleaner {
     static String cleanArtist(String artist) {
         if (artist == null) return null;
         String clean = artist;
-        if (MalojaSettings.metadataCleanup()) {
+        if (MalojaSettings.METADATA_CLEANUP.get()) {
             clean = clean.replaceAll("(?i)\\s*-\\s*topic$", "");
             clean = applyCustomRegex(clean);
         }
@@ -34,7 +33,7 @@ final class MetadataCleaner {
     static String cleanAlbum(String album) {
         if (album == null) return null;
         String clean = album;
-        if (MalojaSettings.metadataCleanup()) {
+        if (MalojaSettings.METADATA_CLEANUP.get()) {
             clean = clean.replaceAll("(?i)\\s*[（(\\[](\\d{4}\\s+)?remaster(ed)?(\\s+\\d{4})?[）)\\]]", "");
             clean = applyCustomRegex(clean);
         }
@@ -48,7 +47,7 @@ final class MetadataCleaner {
         String title = cleanTitle(rawTitle);
         String artist = cleanArtist(rawArtist);
 
-        if (MalojaSettings.parseTitle() && rawTitle != null) {
+        if (MalojaSettings.PARSE_TITLE.get() && rawTitle != null) {
             final String separator = " - ";
             final int separatorIndex = rawTitle.indexOf(separator);
             if (separatorIndex > 0 && separatorIndex < rawTitle.length() - separator.length()) {
@@ -65,7 +64,7 @@ final class MetadataCleaner {
     }
 
     private static String applyCustomRegex(String input) {
-        final String customRegex = MalojaSettings.customRegex();
+        final String customRegex = MalojaSettings.CUSTOM_REGEX.get();
         if (customRegex.isBlank()) return input;
         try {
             return input.replaceAll(customRegex, "");

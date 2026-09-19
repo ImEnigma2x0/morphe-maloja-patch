@@ -39,6 +39,21 @@
                 android:summary="@string/morphe_maloja_delay_seconds_summary"
                 android:inputType="number"
                 android:dependency="morphe_maloja_enabled" />
+            <SwitchPreference
+                android:key="morphe_maloja_metadata_cleanup"
+                android:title="@string/morphe_maloja_metadata_cleanup_title"
+                android:summary="@string/morphe_maloja_metadata_cleanup_summary"
+                android:dependency="morphe_maloja_enabled" />
+            <EditTextPreference
+                android:key="morphe_maloja_custom_regex"
+                android:title="@string/morphe_maloja_custom_regex_title"
+                android:summary="@string/morphe_maloja_custom_regex_summary"
+                android:dependency="morphe_maloja_metadata_cleanup" />
+            <SwitchPreference
+                android:key="morphe_maloja_parse_title"
+                android:title="@string/morphe_maloja_parse_title_title"
+                android:summary="@string/morphe_maloja_parse_title_summary"
+                android:dependency="morphe_maloja_enabled" />
         </PreferenceCategory>
     </screen>
 </morphe-add-on-preferences>

@@ -1,11 +1,12 @@
 package app.enigma.extension.music.maloja;
 
 import static app.morphe.extension.shared.settings.Setting.parent;
+import static app.morphe.extension.shared.settings.Setting.parentsAll;
 import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.settings.IntegerSetting;
-import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.shared.settings.StringSetting;
 
 /**
@@ -20,22 +21,9 @@ public class MalojaSettings {
     public static final IntegerSetting MIN_SONG_DURATION = new IntegerSetting("morphe_maloja_min_song_duration", 30, false, parent(ENABLED));
     public static final IntegerSetting DELAY_PERCENT = new IntegerSetting("morphe_maloja_delay_percent", 50, false, parent(ENABLED));
     public static final IntegerSetting DELAY_SECONDS = new IntegerSetting("morphe_maloja_delay_seconds", 180, false, parent(ENABLED));
-
-    /**
-     * Metadata cleanup settings of the official Scrobbling patch, read by key so the same
-     * cleanup applies to every provider. Defaults match the official patch when it is absent.
-     */
-    static boolean metadataCleanup() {
-        return Setting.preferences.getBoolean("morphe_music_scrobbling_metadata_cleanup", true);
-    }
-
-    static String customRegex() {
-        return Setting.preferences.getString("morphe_music_scrobbling_custom_regex", "");
-    }
-
-    static boolean parseTitle() {
-        return Setting.preferences.getBoolean("morphe_music_scrobbling_parse_title", false);
-    }
+    public static final BooleanSetting METADATA_CLEANUP = new BooleanSetting("morphe_maloja_metadata_cleanup", TRUE, false, parent(ENABLED));
+    public static final StringSetting CUSTOM_REGEX = new StringSetting("morphe_maloja_custom_regex", "", false, parentsAll(parent(ENABLED), parent(METADATA_CLEANUP)));
+    public static final BooleanSetting PARSE_TITLE = new BooleanSetting("morphe_maloja_parse_title", FALSE, false, parent(ENABLED));
 
     static boolean isConfigured() {
         return !SERVER_URL.get().isBlank() && !API_KEY.get().isBlank();

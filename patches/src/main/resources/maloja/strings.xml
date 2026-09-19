@@ -19,4 +19,10 @@
     <string name="morphe_maloja_delay_percent_summary">Percentage of the song that must play before it is scrobbled</string>
     <string name="morphe_maloja_delay_seconds_title">Scrobble after (seconds)</string>
     <string name="morphe_maloja_delay_seconds_summary">Seconds that must play before the song is scrobbled, whichever comes first</string>
+    <string name="morphe_maloja_metadata_cleanup_title">Clean up metadata</string>
+    <string name="morphe_maloja_metadata_cleanup_summary">Remove tags such as (Official Video), (Remastered) and "- Topic" before scrobbling</string>
+    <string name="morphe_maloja_custom_regex_title">Custom cleanup regex</string>
+    <string name="morphe_maloja_custom_regex_summary">Matches of this regular expression are removed from the title, artist and album</string>
+    <string name="morphe_maloja_parse_title_title">Parse "Artist - Title"</string>
+    <string name="morphe_maloja_parse_title_summary">Use the artist and title from a "Artist - Title" track name</string>
 </resources>

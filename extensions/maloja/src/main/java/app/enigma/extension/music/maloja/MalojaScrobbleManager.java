@@ -31,6 +31,9 @@ public class MalojaScrobbleManager {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    /** Metadata of the current track, kept so it can be read again as the song of an album. */
+    private MediaMetadata currentMetadata;
+
     private String currentTitle;
     private String currentArtist;
     private String currentAlbum;
@@ -46,16 +49,44 @@ public class MalojaScrobbleManager {
     private Runnable scrobbleRunnable;
 
     private MalojaScrobbleManager() {
+        AlbumSongBridge.addChangeListener(this::reloadCurrentTrack);
+    }
+
+    /**
+     * The song of an album, and the video id of the app itself, can both land after the metadata
+     * of a track, so the track is read again whenever either of them arrives.
+     */
+    private void reloadCurrentTrack() {
+        Utils.runOnMainThread(() -> {
+            MediaMetadata metadata = currentMetadata;
+            if (metadata != null) {
+                onSetMetadata(metadata);
+            }
+        });
     }
 
     public void onSetMetadata(MediaMetadata metadata) {
         Utils.verifyOnMainThread();
         if (metadata == null) return;
 
-        final String rawTitle = metadata.getString(MediaMetadata.METADATA_KEY_TITLE);
+        currentMetadata = metadata;
+
+        String rawTitle = metadata.getString(MediaMetadata.METADATA_KEY_TITLE);
         final String rawArtist = metadata.getString(MediaMetadata.METADATA_KEY_ARTIST);
         final String album = MetadataCleaner.cleanAlbum(metadata.getString(MediaMetadata.METADATA_KEY_ALBUM));
-        final int duration = (int) (metadata.getLong(MediaMetadata.METADATA_KEY_DURATION) / 1000);
+        int duration = (int) (metadata.getLong(MediaMetadata.METADATA_KEY_DURATION) / 1000);
+
+        // With the official "Play album songs" patch the metadata still describes the music video,
+        // which names another version of the song and is minutes longer. Only the artist is the same.
+        AlbumSongBridge.Song song = AlbumSongBridge.currentSong();
+        if (song != null) {
+            if (song.title != null && !song.title.isBlank()) {
+                rawTitle = song.title;
+            }
+            if (song.durationSeconds > 0) {
+                duration = song.durationSeconds;
+            }
+        }
 
         final String[] resolved = MetadataCleaner.resolveTitleAndArtist(rawTitle, rawArtist);
         final String title = resolved[0];
