@@ -36,6 +36,12 @@ public class Maloja {
     }
 
     /**
+     * Suffixes a user may paste along with the server URL: Maloja documents its API as
+     * {@code <server>/apis/listenbrainz}, and ListenBrainz clients append {@code /1}.
+     */
+    private static final String[] API_SUFFIXES = {"/apis/listenbrainz/1", "/apis/listenbrainz"};
+
+    /**
      * @return The server URL as typed by the user, reduced to the origin plus any base path,
      *         with https as the scheme, or an empty string if nothing usable was typed.
      */
@@ -50,15 +56,21 @@ public class Maloja {
             url = "https://" + url;
         }
 
+        url = stripTrailingSlashes(url);
+        for (String suffix : API_SUFFIXES) {
+            if (url.endsWith(suffix)) {
+                url = stripTrailingSlashes(url.substring(0, url.length() - suffix.length()));
+                break;
+            }
+        }
+
+        return url;
+    }
+
+    private static String stripTrailingSlashes(String url) {
         while (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
-
-        final String apiSuffix = API_PATH.substring(0, API_PATH.length() - 1);
-        if (url.endsWith(apiSuffix)) {
-            url = url.substring(0, url.length() - apiSuffix.length());
-        }
-
         return url;
     }
 

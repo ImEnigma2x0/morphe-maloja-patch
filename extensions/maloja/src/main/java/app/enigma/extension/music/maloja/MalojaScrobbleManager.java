@@ -198,7 +198,7 @@ public class MalojaScrobbleManager {
     private void startTimer() {
         cancelRunnable();
 
-        final int minSongDuration = MalojaSettings.MIN_SONG_DURATION.get();
+        final int minSongDuration = MalojaSettings.minSongDurationSeconds();
         if (currentDurationSeconds <= minSongDuration) {
             Logger.printDebug(() -> "Duration " + currentDurationSeconds
                     + "s <= minimum " + minSongDuration + "s, skipping scrobble");
@@ -206,8 +206,8 @@ public class MalojaScrobbleManager {
             return;
         }
 
-        final float delayPercent = MalojaSettings.DELAY_PERCENT.get() / 100.0f;
-        final long delayMillis = MalojaSettings.DELAY_SECONDS.get() * 1000L;
+        final float delayPercent = MalojaSettings.delayPercent() / 100.0f;
+        final long delayMillis = MalojaSettings.delaySeconds() * 1000L;
         final long thresholdMillis = (long) (currentDurationSeconds * 1000L * delayPercent);
         scrobbleAtPlayedMillis = Math.min(thresholdMillis, delayMillis);
 
