@@ -79,11 +79,12 @@ public class MalojaScrobbleManager {
         // With the official "Play album songs" patch the metadata still describes the music video,
         // which names another version of the song and is minutes longer. Only the artist is the same.
         AlbumSongBridge.Song song = AlbumSongBridge.currentSong();
+        final boolean songDurationKnown = song != null && song.durationSeconds > 0;
         if (song != null) {
             if (song.title != null && !song.title.isBlank()) {
                 rawTitle = song.title;
             }
-            if (song.durationSeconds > 0) {
+            if (songDurationKnown) {
                 duration = song.durationSeconds;
             }
         }
@@ -113,19 +114,22 @@ public class MalojaScrobbleManager {
         }
 
         // Same song, but the duration or album may only arrive with a later metadata update.
-        boolean updated = false;
-        if (duration > currentDurationSeconds) {
+        // The album song is authoritative, since it is shorter than the video it replaces.
+        final boolean durationChanged = songDurationKnown
+                ? duration != currentDurationSeconds
+                : duration > currentDurationSeconds;
+        if (durationChanged) {
+            final int newDuration = duration;
+            Logger.printDebug(() -> "Updated duration for " + title + ": " + newDuration + "s");
             currentDurationSeconds = duration;
-            updated = true;
         }
         if (album != null && !album.isBlank() && (currentAlbum == null || currentAlbum.isBlank())) {
             currentAlbum = album;
-            updated = true;
         }
 
-        if (updated && songStarted && isPlayerPlaying && MalojaSettings.ENABLED.get()
-                && !scrobbled && scrobbleRunnable == null && scrobbleTimerStartedAt == 0L) {
-            // The timer may have been skipped because the duration was unknown at song start.
+        if (durationChanged && songStarted && !scrobbled && MalojaSettings.ENABLED.get()) {
+            // Recompute the timer from the song start with the corrected duration, whether the
+            // timer was skipped for an unknown duration or is still running with the old one.
             startTimer();
         }
     }
