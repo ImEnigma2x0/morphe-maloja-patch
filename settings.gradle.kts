@@ -1,4 +1,4 @@
-rootProject.name = "morphe-patches-template"
+rootProject.name = "morphe-maloja-patch"
 
 pluginManagement {
     repositories {
@@ -18,4 +18,10 @@ pluginManagement {
 
 plugins {
     id("app.morphe.patches") version "1.3.4"
+}
+
+settings {
+    extensions {
+        defaultNamespace = "app.enigma.extension"
+    }
 }
