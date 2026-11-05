@@ -29,6 +29,11 @@ This is not a fork: keep using the official source and add this one next to it.
   since the official ones are only available while Last.fm or ListenBrainz is enabled.
 - Works with the official `Play album songs` patch: the album track title and length are used
   instead of the music video ones.
+- Scrobbles are saved on the device before they are sent. Listens made without a connection, or
+  while the server is down, are sent later with their original time, as soon as a network connects
+  or the app is opened again.
+- Works with the offline player of the official `Downloads` patch: downloaded songs played from
+  the local downloads screen are scrobbled too, also when offline.
 
 ## 🩹 Patches list
 
